@@ -7,27 +7,6 @@ app_registry:
     icon: ''
     default_app: ''
     allow_creation: false
-  - mime_type: application/vnd.oasis.opendocument.text
-    extension: odt
-    name: OpenDocument
-    description: OpenDocument text document
-    icon: ''
-    default_app: Collabora
-    allow_creation: true
-  - mime_type: application/vnd.oasis.opendocument.spreadsheet
-    extension: ods
-    name: OpenSpreadsheet
-    description: OpenDocument spreadsheet document
-    icon: ''
-    default_app: Collabora
-    allow_creation: true
-  - mime_type: application/vnd.oasis.opendocument.presentation
-    extension: odp
-    name: OpenPresentation
-    description: OpenDocument presentation document
-    icon: ''
-    default_app: Collabora
-    allow_creation: true
   - mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
     extension: docx
     name: Microsoft Word
