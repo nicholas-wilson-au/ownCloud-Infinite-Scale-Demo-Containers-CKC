@@ -10,6 +10,7 @@ services:
           - "ocis.${DOMAIN:-owncloud.test}"
           - "wopiserver.${DOMAIN:-owncloud.test}"
           - "onlyoffice.${DOMAIN:-owncloud.test}"
+          - "keycloak.${DOMAIN:-owncloud.test}"
     command:
       - "--log.level=${TRAEFIK_LOG_LEVEL:-ERROR}"
       # letsencrypt configuration
@@ -64,6 +65,18 @@ services:
       OCIS_LOG_COLOR: "${OCIS_LOG_COLOR:-false}"
       PROXY_TLS: "false" # do not use SSL between Traefik and oCIS
       GATEWAY_GRPC_ADDR: 0.0.0.0:9142 # make the REVA gateway accessible to the app drivers
+      # Keycloak IDP specific configuration
+      PROXY_AUTOPROVISION_ACCOUNTS: "true"
+      PROXY_ROLE_ASSIGNMENT_DRIVER: "oidc"
+      OCIS_OIDC_ISSUER: https://keycloak.${DOMAIN:-owncloud.test}/realms/${KEYCLOAK_REALM:-oCIS}
+      PROXY_OIDC_REWRITE_WELLKNOWN: "true"
+      WEB_OIDC_CLIENT_ID: ${OCIS_OIDC_CLIENT_ID:-web}
+      PROXY_USER_OIDC_CLAIM: "preferred_username"
+      PROXY_USER_CS3_CLAIM: "username"
+      OCIS_ADMIN_USER_ID: ""
+      OCIS_EXCLUDE_RUN_SERVICES: "idp"
+      GRAPH_ASSIGN_DEFAULT_USER_ROLE: "false"
+      GRAPH_USERNAME_MATCH: "none"
       # INSECURE: needed if oCIS / Traefik is using self generated certificates
       OCIS_INSECURE: false
       # basic auth (not recommended, but needed for eg. WebDav clients that do not support OpenID Connect)
@@ -185,11 +198,78 @@ services:
       ocis-net:
     restart: always
 
+  portainer:
+    image: portainer/portainer-ce:2.19.0
+    networks:
+      ocis-net:
+    command: --admin-password "$$apr1$$31t62kiu$$0SUzfGnnONHarbCYnMXC91"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.entrypoints=https"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN:-owncloud.test}`)"
+      - "traefik.http.routers.portainer.tls.certresolver=http"
+      - "traefik.http.routers.portainer.service=portainer"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+    logging:
+      driver: "local"
+    restart: always
+
+  postgres:
+    image: postgres:alpine
+    networks:
+      ocis-net:
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    logging:
+      driver: "local"
+    restart: always
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    networks:
+      ocis-net:
+    command: ["start", "--proxy edge", "--spi-connections-http-client-default-disable-trust-manager=${INSECURE:-false}", "--import-realm"]
+    entrypoint: ["/bin/sh", "/opt/keycloak/bin/docker-entrypoint-override.sh"]
+    volumes:
+      - "./config/keycloak/docker-entrypoint-override.sh:/opt/keycloak/bin/docker-entrypoint-override.sh"
+      - "./config/keycloak/ocis-realm.dist.json:/opt/keycloak/data/import-dist/ocis-realm.json"
+    environment:
+      OCIS_DOMAIN: ${OCIS_DOMAIN:-ocis.owncloud.test}
+      KC_HOSTNAME: ${KEYCLOAK_DOMAIN:-keycloak.owncloud.test}
+      KC_DB: postgres
+      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_FEATURES: impersonation
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.entrypoints=https"
+      - "traefik.http.routers.keycloak.rule=Host(`keycloak.${DOMAIN:-owncloud.test}`)"
+      - "traefik.http.routers.keycloak.tls.certresolver=http"
+      - "traefik.http.routers.keycloak.service=keycloak"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+    depends_on:
+      - postgres
+    logging:
+      driver: "local"
+    restart: always
+
 volumes:
   certs:
   ocis-config:
   ocis-data:
   wopi-recovery:
+  portainer_data:
+  keycloak_postgres_data:
 
 networks:
   ocis-net:
