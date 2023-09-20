@@ -40,7 +40,7 @@ services:
       - "certs:/certs"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_BASIC_AUTH_USERS:-admin:$$apr1$$31t62kiu$$0SUzfGnnONHarbCYnMXC91}" # defaults to admin:ownCloud!
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_BASIC_AUTH_USERS:-admin:$$apr1$$hw9ulmqk$$Nn0SWe4x./CbgC500BQ/K1}" # defaults to admin:ownCloud123!
       - "traefik.http.routers.traefik.entrypoints=https"
       - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-owncloud.test}`)"
       - "traefik.http.routers.traefik.middlewares=traefik-auth"
@@ -166,7 +166,7 @@ services:
       DONT_GEN_SSL_CERT: "YES"
       extra_params: --o:ssl.enable=false --o:ssl.termination=true --o:welcome.enable=false --o:net.frame_ancestors=ocis.${DOMAIN:-owncloud.test}
       username: ${COLLABORA_ADMIN_USER:-admin}
-      password: ${COLLABORA_ADMIN_PASSWORD:-admin}
+      password: ${COLLABORA_ADMIN_PASSWORD:-ownCloud123!}
     cap_add:
       - MKNOD
     labels:
@@ -190,6 +190,7 @@ services:
     image: portainer/portainer-ce:2.19.0
     networks:
       ocis-net:
+    command: --admin-password "$$2y$$05$$h21Nyry2bxFmEwlyr8XC9.X6ZV8lP6vgxJUi0oijhRoR6ePQxOU6C"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -236,7 +237,7 @@ services:
       KC_DB_PASSWORD: keycloak
       KC_FEATURES: impersonation
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-ownCloud123!}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.entrypoints=https"
