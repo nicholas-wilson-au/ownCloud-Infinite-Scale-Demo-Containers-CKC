@@ -3,7 +3,7 @@ version: "3.7"
 
 services:
   traefik:
-    image: traefik:v2.10.4
+    image: traefik:v2.10
     networks:
       ocis-net:
         aliases:
@@ -51,7 +51,7 @@ services:
     restart: always
 
   ocis:
-    image: owncloud/ocis:4.0.0
+    image: owncloud/ocis:4.0.2
     networks:
       ocis-net:
     entrypoint:
@@ -104,7 +104,7 @@ services:
     restart: always
 
   ocis-appprovider-collabora:
-    image: owncloud/ocis:4.0.0
+    image: owncloud/ocis:4.0.2
     networks:
       ocis-net:
     command: app-provider server
@@ -132,7 +132,7 @@ services:
     restart: always
 
   wopiserver:
-    image: cs3org/wopiserver:v10.1.2
+    image: cs3org/wopiserver:v10.2.0
     networks:
       ocis-net:
     entrypoint:
@@ -158,7 +158,7 @@ services:
     restart: always
 
   collabora:
-    image: collabora/code:23.05.4.2.1
+    image: collabora/code:23.05.5.2.1
     networks:
       ocis-net:
     environment:
@@ -181,13 +181,13 @@ services:
     restart: always
 
   tika:
-    image: apache/tika:2.9.0.0-full
+    image: apache/tika:2.9.1.0-full
     networks:
       ocis-net:
     restart: always
 
   portainer:
-    image: portainer/portainer-ce:2.19.0
+    image: portainer/portainer-ce:2.19.1
     networks:
       ocis-net:
     command: --admin-password "$$2y$$05$$h21Nyry2bxFmEwlyr8XC9.X6ZV8lP6vgxJUi0oijhRoR6ePQxOU6C"
