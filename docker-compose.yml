@@ -51,7 +51,7 @@ services:
     restart: always
 
   ocis:
-    image: owncloud/ocis:4.0.3
+    image: owncloud/ocis:4.0.4
     networks:
       ocis-net:
     entrypoint:
@@ -104,7 +104,7 @@ services:
     restart: always
 
   ocis-appprovider-collabora:
-    image: owncloud/ocis:4.0.3
+    image: owncloud/ocis:4.0.4
     networks:
       ocis-net:
     command: app-provider server
